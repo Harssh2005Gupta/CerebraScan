@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NeuroMap — Deep Learning Brain Tumor Detection, Lesion Classification, and Grad-CAM Explainability Research Prototype.">
+    <title>NeuroMap — Neural Imaging &amp; Lesion Classification</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Ambient background grid texture -->
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <!-- Header & Navigation -->
+    <header class="site-header" role="banner">
+        <div class="header-container">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">⌬</span>
+                <div>
+                    <h1 class="brand-name">NEUROMAP</h1>
+                    <p class="brand-tag">// neural imaging &amp; lesion classification research</p>
+                </div>
+            </div>
+
+            <div class="header-status">
+                <div class="status-pill" id="systemStatusPill" role="status" aria-live="polite" title="Checking inference server readiness...">
+                    <span class="status-indicator status-indicator--checking" id="statusDot"></span>
+                    <span class="status-label" id="statusText">Connecting...</span>
+                </div>
+                <button class="status-refresh-btn" id="refreshStatusBtn" title="Recheck backend health" aria-label="Recheck backend health">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Research Prototype Disclaimer Banner -->
+        <div class="research-banner" role="alert">
+            <div class="research-banner__content">
+                <span class="research-banner__badge">RESEARCH PROTOTYPE</span>
+                <span class="research-banner__text">
+                    For educational demonstration and computational evaluation only. Not certified for medical diagnosis or clinical decision support.
+                </span>
+            </div>
+            <a href="#clinical-scope" class="research-banner__link">View Clinical Scope &rarr;</a>
+        </div>
+    </header>
+
+    <main class="container" id="mainContent" role="main">
+
+        <!-- Top Section: Diagnostic Workflow Grid -->
+        <section class="workspace-grid" aria-label="Diagnostic Workflow">
+
+            <!-- Panel 1: MRI Scan Upload & Validation -->
+            <article class="panel upload-panel" id="uploadCard">
+                <div class="panel__header">
+                    <span class="step-index">01</span>
+                    <div>
+                        <h2>Load Brain MRI Scan</h2>
+                        <p class="panel__subtext">Accepted formats: PNG, JPG, WEBP. Max 16 MB.</p>
+                    </div>
+                </div>
+
+                <div class="panel__body upload-panel__body">
+                    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload MRI scan: drop image here or press Enter to browse files">
+                        <input type="file" id="imageInput" accept="image/png, image/jpeg, image/webp" hidden>
+
+                        <div class="dropzone__icon" aria-hidden="true">
+                            <svg viewBox="0 0 64 64" width="52" height="52">
+                                <path d="M32 8 L32 40 M20 22 L32 8 L44 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="10" y="46" width="44" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                            </svg>
+                        </div>
+
+                        <p class="dropzone__title">Drag &amp; drop MRI scan</p>
+                        <p class="dropzone__sub">or click to browse local files</p>
+                        <p class="dropzone__filename" id="filename">No file selected</p>
+                    </div>
+
+                    <!-- Client-side File Validation Notice -->
+                    <div class="validation-message" id="validationMessage" role="alert" style="display: none;"></div>
+
+                    <!-- Scan metadata preview strip (when file is loaded) -->
+                    <div class="file-meta-bar" id="fileMetaBar" style="display: none;">
+                        <div class="file-meta-item">
+                            <span class="file-meta-label">File:</span>
+                            <span class="file-meta-value" id="metaName">—</span>
+                        </div>
+                        <div class="file-meta-item">
+                            <span class="file-meta-label">Size:</span>
+                            <span class="file-meta-value" id="metaSize">—</span>
+                        </div>
+                        <div class="file-meta-item">
+                            <span class="file-meta-label">Type:</span>
+                            <span class="file-meta-value" id="metaType">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Action Buttons -->
+                    <div class="action-row">
+                        <button class="predict-btn" id="predictBtn" disabled aria-label="Run prediction on uploaded MRI scan">
+                            <span class="predict-btn__label">Run Diagnostic Inference</span>
+                            <span class="predict-btn__pulse" aria-hidden="true"></span>
+                        </button>
+                        <button class="reset-btn" id="resetBtn" style="display: none;" aria-label="Reset and choose another scan">
+                            Clear Scan
+                        </button>
+                    </div>
+
+                    <!-- Input Guidelines -->
+                    <div class="input-guidelines">
+                        <div class="guideline-chip"><span>✓</span> In-Memory Processing</div>
+                        <div class="guideline-chip"><span>✓</span> 224&times;224 RGB Alignment</div>
+                        <div class="guideline-chip"><span>✓</span> Ephemeral Storage</div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Panel 2: Results & Explainability Output -->
+            <article class="panel result-panel" id="rightPanel" aria-label="Diagnostic Output">
+                <div class="panel__header">
+                    <span class="step-index">02</span>
+                    <div>
+                        <h3>Diagnostic Analysis &amp; Attribution</h3>
+                        <p class="panel__subtext">Class prediction, calibrated confidence, and Grad-CAM map</p>
+                    </div>
+                </div>
+
+                <div class="panel__body" id="resultBody">
+                    <!-- Default Initial State -->
+                    <div class="placeholder" id="defaultPlaceholder">
+                        <svg viewBox="0 0 64 64" width="48" height="48" aria-hidden="true">
+                            <circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <path d="M32 20 L32 34 L40 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p class="placeholder-title">Awaiting Input Scan</p>
+                        <p class="placeholder-desc">Upload a brain MRI scan above and click "Run Diagnostic Inference" to view the predicted class and Grad-CAM activation overlay.</p>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- Hidden container to preserve legacy ID needed by test fixtures -->
+        <div id="scanBody" style="display: none;"></div>
+
+        <!-- Section 2: Clinical Taxonomy (The 4 Output Classes) -->
+        <section class="info-section" id="taxonomy-section" aria-labelledby="taxonomy-title">
+            <div class="section-header">
+                <span class="section-badge">TAXONOMY</span>
+                <h3 id="taxonomy-title">Classification Scope &amp; Lesion Classes</h3>
+                <p>The NeuroMap model is trained to categorize brain MRI scans into four mutual classes:</p>
+            </div>
+
+            <div class="taxonomy-grid">
+                <div class="taxonomy-card">
+                    <div class="taxonomy-card__header">
+                        <span class="taxonomy-indicator taxonomy-indicator--glioma"></span>
+                        <h4>Glioma</h4>
+                    </div>
+                    <p class="taxonomy-card__desc">
+                        Primary intra-axial brain tumors originating from glial progenitor cells (astrocytomas, oligodendrogliomas, glioblastomas). Often characterized by ill-defined, infiltrative margins and surrounding vasogenic edema.
+                    </p>
+                </div>
+
+                <div class="taxonomy-card">
+                    <div class="taxonomy-card__header">
+                        <span class="taxonomy-indicator taxonomy-indicator--meningioma"></span>
+                        <h4>Meningioma</h4>
+                    </div>
+                    <p class="taxonomy-card__desc">
+                        Predominantly benign, extra-axial neoplasms originating from arachnoid cap cells of the meninges. Typically well-circumscribed, displaying homogeneous contrast enhancement and a characteristic dural tail sign.
+                    </p>
+                </div>
+
+                <div class="taxonomy-card">
+                    <div class="taxonomy-card__header">
+                        <span class="taxonomy-indicator taxonomy-indicator--pituitary"></span>
+                        <h4>Pituitary Tumor</h4>
+                    </div>
+                    <p class="taxonomy-card__desc">
+                        Neuroendocrine neoplasms arising in the sella turcica from the anterior pituitary gland (adenohypophysis). Frequently present with endocrine dysregulation or optic chiasm compression causing bitemporal hemianopsia.
+                    </p>
+                </div>
+
+                <div class="taxonomy-card">
+                    <div class="taxonomy-card__header">
+                        <span class="taxonomy-indicator taxonomy-indicator--notumor"></span>
+                        <h4>No Tumor (Normal)</h4>
+                    </div>
+                    <p class="taxonomy-card__desc">
+                        Absence of focal mass effect, abnormal contrast enhancement, or gross structural pathology. Represents healthy brain parenchyma, baseline ventricular symmetry, and normal anatomical margins.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Technical Limitations & Clinical Scope -->
+        <section class="info-section" id="clinical-scope" aria-labelledby="scope-title">
+            <div class="section-header">
+                <span class="section-badge">LIMITATIONS</span>
+                <h3 id="scope-title">Technical Limitations &amp; Clinical Safety</h3>
+                <p>Understanding model constraints is crucial to preventing automation bias and misinterpretation:</p>
+            </div>
+
+            <div class="limitations-grid">
+                <div class="limitations-card">
+                    <div class="limitations-card__icon" aria-hidden="true">🎯</div>
+                    <div>
+                        <h4>Receptive Field Blooming</h4>
+                        <p>Grad-CAM operates on late convolutional feature maps (7&times;7 spatial resolution). Bilinear upsampling to 224&times;224 produces coarse heat blobs that highlight influential regions rather than precise anatomical tumor boundaries or surgical resection margins.</p>
+                    </div>
+                </div>
+
+                <div class="limitations-card">
+                    <div class="limitations-card__icon" aria-hidden="true">🧊</div>
+                    <div>
+                        <h4>2D Single-Slice Limitation</h4>
+                        <p>Clinical neuroradiology interprets volumetric multi-parametric sequences (T1-weighted, T1-contrast, T2-weighted, and FLAIR). NeuroMap analyzes a single 2D slice without volumetric depth, multi-sequence contrast, or patient clinical history.</p>
+                    </div>
+                </div>
+
+                <div class="limitations-card">
+                    <div class="limitations-card__icon" aria-hidden="true">⚠️</div>
+                    <div>
+                        <h4>Selection Bias &amp; Demographics</h4>
+                        <p>Trained on public benchmark datasets with potential slice redundancy and demographic clustering. The model has not been validated on diverse hospital populations, rare tumor subtypes, or low-grade gliomas.</p>
+                    </div>
+                </div>
+
+                <div class="limitations-card">
+                    <div class="limitations-card__icon" aria-hidden="true">🔒</div>
+                    <div>
+                        <h4>Privacy &amp; Data Handling</h4>
+                        <p>Uploaded scans are processed in-memory for inference. Temporary visual overlays are automatically purged from storage via automated lifecycle management. No patient-identifiable data (PHI) is collected or retained.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <span class="brand-mark" aria-hidden="true">⌬</span>
+                <span>NEUROMAP RESEARCH PROJECT</span>
+            </div>
+            <p class="footer-disclaimer">
+                DISCLAIMER: NeuroMap is an educational research demonstration developed to investigate explainable AI (Grad-CAM) in computer vision. It is NOT a medical device, diagnostic test, or clinical decision support software. Outputs must never supersede the professional judgment of qualified healthcare professionals.
+            </p>
+            <p class="footer-meta">
+                NeuroMap v2.1 &mdash; Python / TensorFlow / Flask Architecture &mdash; &copy; 2026
+            </p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

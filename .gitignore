@@ -1,0 +1,72 @@
+# ==============================================================================
+# NeuroMap .gitignore
+# ==============================================================================
+
+# Large Model Artifacts & Weights (download or train separately)
+model/*.keras
+model/*.h5
+model/*.tflite
+model/*.onnx
+model/*.pb
+model/variables/
+*.keras
+*.h5
+*.ckpt
+*.pt
+*.pth
+
+# Runtime Uploads & Generated Heatmaps
+uploads/*
+!uploads/.gitkeep
+static/gradcam/*
+!static/gradcam/.gitkeep
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python bytecode & caching
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+conda-env/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs & Temporary files
+*.log
+logs/
+tmp/
+scratch/

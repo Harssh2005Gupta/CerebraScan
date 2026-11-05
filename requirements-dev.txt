@@ -1,0 +1,11 @@
+# NeuroMap — Development & Testing Dependencies
+-r requirements.txt
+
+# Testing Framework & Plugins
+pytest>=8.0.0,<9.0.0
+pytest-cov>=4.1.0,<6.0.0
+
+# Code Quality & Formatting
+ruff>=0.1.0
+flake8>=6.0.0
+black>=23.0.0

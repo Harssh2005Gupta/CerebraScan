@@ -1,0 +1,33 @@
+# Git and CI/CD
+.git/
+.github/
+.gitignore
+
+# Tests and Evaluation Suites
+tests/
+evaluation/
+evaluation_artifacts/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime & Model Files (mounted at runtime)
+model/
+uploads/
+static/gradcam/*
+!static/gradcam/.gitkeep
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Notebooks and Documentation
+tumor-detector.ipynb
+*.md

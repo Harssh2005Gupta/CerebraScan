@@ -1,0 +1,97 @@
+{
+  "dataset_audit": {
+    "source": "Kaggle (masoudnickparvar/brain-tumor-mri-dataset)",
+    "underlying_sources": [
+      "Cheng et al. (Figshare, 3064 T1-CE MRI slices from 233 patients)",
+      "Br35H (Brain Tumor Detection 2020)"
+    ],
+    "total_test_samples": 1600,
+    "per_class_support": {
+      "glioma": 400,
+      "meningioma": 400,
+      "notumor": 400,
+      "pituitary": 400
+    },
+    "patient_level_leakage_risk": "HIGH (Dataset lacks patient IDs; slices likely cross-contaminate splits)",
+    "external_validation": "NONE (Evaluated solely on in-distribution test split)"
+  },
+  "diagnostic_metrics": {
+    "glioma": {
+      "true_positives": 318,
+      "false_negatives": 82,
+      "false_positives": 10,
+      "true_negatives": 1190,
+      "sensitivity": 0.795,
+      "specificity": 0.9917,
+      "positive_predictive_value": 0.9695,
+      "negative_predictive_value": 0.9355,
+      "diagnostic_odds_ratio": 461.49
+    },
+    "meningioma": {
+      "true_positives": 357,
+      "false_negatives": 43,
+      "false_positives": 27,
+      "true_negatives": 1173,
+      "sensitivity": 0.8925,
+      "specificity": 0.9775,
+      "positive_predictive_value": 0.9297,
+      "negative_predictive_value": 0.9646,
+      "diagnostic_odds_ratio": 360.69
+    },
+    "notumor": {
+      "true_positives": 397,
+      "false_negatives": 3,
+      "false_positives": 54,
+      "true_negatives": 1146,
+      "sensitivity": 0.9925,
+      "specificity": 0.955,
+      "positive_predictive_value": 0.8803,
+      "negative_predictive_value": 0.9974,
+      "diagnostic_odds_ratio": 2808.41
+    },
+    "pituitary": {
+      "true_positives": 396,
+      "false_negatives": 4,
+      "false_positives": 41,
+      "true_negatives": 1159,
+      "sensitivity": 0.99,
+      "specificity": 0.9658,
+      "positive_predictive_value": 0.9062,
+      "negative_predictive_value": 0.9966,
+      "diagnostic_odds_ratio": 2798.56
+    }
+  },
+  "glioma_false_negative_hazard": {
+    "total_glioma_cases": 400,
+    "true_positives": 318,
+    "total_false_negatives": 82,
+    "false_negative_rate_pct": 20.5,
+    "breakdown": {
+      "missed_as_healthy_notumor": {
+        "count": 40,
+        "percentage_of_glioma": 10.0,
+        "clinical_hazard_level": "CRITICAL",
+        "hazard_description": "Patient with active infiltrative glioma is informed no lesion is detected. Leads to delayed oncological intervention, tumor progression, and compromised survival."
+      },
+      "confused_with_meningioma": {
+        "count": 26,
+        "percentage_of_glioma": 6.5,
+        "clinical_hazard_level": "MODERATE_HIGH",
+        "hazard_description": "Glioma misidentified as extra-axial meningioma. While lesion detection succeeds, surgical margin planning, biopsy strategy, and urgency differ fundamentally."
+      },
+      "confused_with_pituitary": {
+        "count": 16,
+        "percentage_of_glioma": 4.0,
+        "clinical_hazard_level": "MODERATE",
+        "hazard_description": "Anatomical discrepancy: intra-axial glioma misattributed to sellar/pituitary region."
+      }
+    },
+    "safety_recommendations": [
+      "Implement high-sensitivity screening threshold for the Glioma class.",
+      "Do not discharge patients based solely on automated 'No Tumor' output.",
+      "Integrate multi-modal MRI sequences (T2-FLAIR) to detect hyperintense peritumoral edema.",
+      "Mandate secondary radiologist review on all scans with Glioma probability > 0.15."
+    ]
+  },
+  "stress_test_findings": []
+}

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test:
+    name: Test & Lint Suite
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Set up Node.js (for frontend static validation)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements-dev.txt
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile app.py config.py gradcam.py integrated_gradients.py wsgi.py utils/preprocess.py utils/cleanup.py
+
+      - name: Validate Frontend JavaScript syntax
+        run: |
+          node -c static/js/app.js
+
+      - name: Run Pytest Test Suite
+        env:
+          FLASK_ENV: testing
+          NEUROMAP_LOG_LEVEL: WARNING
+        run: |
+          pytest tests/ -v

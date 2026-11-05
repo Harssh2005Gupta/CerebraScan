@@ -1,0 +1,59 @@
+# NeuroMap — Baseline Custom ResNet Configuration
+experiment_name: "baseline_resnet"
+seed: 42
+
+dataset:
+  train_path: "data/Training"
+  test_path: "data/Testing"
+  img_size: [224, 224]
+  num_channels: 3
+  batch_size: 32
+  val_split: 0.15
+  class_names: ["glioma", "meningioma", "notumor", "pituitary"]
+
+augmentation:
+  enabled: true
+  horizontal_flip: true
+  vertical_flip: true
+  brightness_delta: 0.15
+  contrast_lower: 0.85
+  contrast_upper: 1.15
+  saturation_lower: 0.85
+  saturation_upper: 1.15
+  rotation_factor: 0.10
+  zoom_factor: 0.10
+
+model:
+  architecture: "baseline_resnet"
+  l2_reg: 0.0001
+  dropout_1: 0.40
+  dropout_2: 0.30
+  dense_units: 256
+  target_conv_layer: "activation_17"
+
+training:
+  epochs: 60
+  optimizer: "adamw"
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  loss: "categorical_crossentropy"
+  label_smoothing: 0.10
+  class_weights: "balanced"
+  
+callbacks:
+  early_stopping:
+    monitor: "val_accuracy"
+    patience: 15
+    restore_best_weights: true
+  reduce_lr:
+    monitor: "val_loss"
+    factor: 0.5
+    patience: 5
+    min_lr: 0.000001
+  checkpoint:
+    monitor: "val_accuracy"
+    save_best_only: true
+    filename: "best_model.keras"
+
+output:
+  dir: "artifacts/baseline_resnet"
