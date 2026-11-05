@@ -1,4 +1,4 @@
-# NeuroMap — Brain Tumor Detection & Classification
+#  Brain Tumor Detection & Classification
 
 [![Tests](https://img.shields.io/badge/tests-58%20passed-brightgreen.svg)](#testing)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
