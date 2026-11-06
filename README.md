@@ -16,26 +16,26 @@
 flowchart TD
     Client["Browser / REST Client"] -->|Multipart POST /predict| FlaskApp["Flask Application Factory (create_app)"]
     
-    subgraph Security & Validation Pipeline
+    subgraph Security_Pipeline["Security and Validation Pipeline"]
         FlaskApp --> ValidateSize["Payload Size Guard (MAX_CONTENT_LENGTH 16MB)"]
-        ValidateSize --> DeepValidation["Deep Content Validation (PIL verify + format whitelist)"]
+        ValidateSize --> DeepValidation["Deep Content Validation (PIL verify and format whitelist)"]
         DeepValidation --> DimensionGuard["Dimension Bounds Check (16x16 to 8192x8192)"]
     end
 
-    subgraph Deep Learning & Inference
-        DimensionGuard --> Preprocess["Preprocess: RGB 224x224, Normalized [0.0, 1.0]"]
+    subgraph DL_Inference["Deep Learning and Inference"]
+        DimensionGuard --> Preprocess["Preprocess: RGB 224x224, Normalized 0.0 to 1.0"]
         Preprocess --> TFModel["TensorFlow / Keras CNN Model (ResNet Baseline / Transfer)"]
         TFModel --> Softmax["Softmax Probability Distribution (4 Classes)"]
     end
 
-    subgraph Explainable AI (XAI) Engine
+    subgraph XAI_Engine["Explainable AI (XAI) Engine"]
         TFModel --> DynamicDetection["Recursive Layer Search (find_last_conv_layer)"]
         DynamicDetection --> GradCAM["Grad-CAM (Log-Gradient Stabilization)"]
         DynamicDetection --> IntGrad["Integrated Gradients (Path-Integral Attributions)"]
         GradCAM --> OverlayEngine["Color-Mapped Heatmap Overlay (Jet Colormap)"]
     end
 
-    subgraph Lifecycle & Storage
+    subgraph Storage_Lifecycle["Lifecycle and Storage"]
         OverlayEngine --> PruneOld["Automated File Pruning (cleanup_old_files TTL)"]
         PruneOld --> StaticStorage["Ephemeral Storage: static/gradcam/"]
     end
